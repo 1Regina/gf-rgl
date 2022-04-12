@@ -50,20 +50,36 @@ oper
     empty : Str ; -- need to avoid GF being silly. See https://inariksit.github.io/gf/2018/08/28/gf-gotchas.html#metavariables-or-those-question-marks-that-appear-when-parsing
     } ;
 
+  IPhrase : Type = NounPhrase ** {
+    sp : NForm => Str ; -- standalone berapa banyak kucing
+  } ;
+
   emptyNP : NounPhrase = {
     s = \\_ => [] ;
     a = NotPron ;
     empty = []
     } ;
 
+  mkIP : Str -> IPhrase = \str -> {
+    s = \\_ => str ;
+    a = NotPron ;
+    empty = [] ;
+    sp = \\_ => str ;
+  } ;
+
+
 --------------------------------------------------------------------------------
 -- Det, Quant, Card, Ord
 
   Quant : Type = {
-    s : Str ;
-    sp : NForm => Str ;
+    s : Str ; -- quantifier in a context, eg. 'berapa (kucing)'
+    sp : NForm => Str ; -- a standalone, eg. '(kucing) berapa banyak'
     poss : Possession ;
     } ;
+
+  IQuant : Type = Quant ** {
+    isPre : Bool ;
+  } ;
 
   Determiner : Type = Quant ** {
     pr : Str ; -- prefix for numbers
@@ -97,10 +113,37 @@ oper
     poss = Bare ;
     } ;
 
+      -- \\vf,pol, =>
+      -- let
+      --   verb   : Str    = joinVP vp tense ant pol agr ;
+      --   obj    : Str    = vp.s2 ! agr ;
+      -- in case ord of {
+      --   ODir   => subj ++ verb ++ obj ;  -- Ġanni jiekol ħut
+      --   OQuest => verb ++ obj ++ subj    -- jiekol ħut Ġanni ?
+      -- }
+
   mkQuant : Str -> Quant = \str -> baseQuant ** {
     s = str ;
     sp = \\_ => str
     } ;
+
+  mkDet : Str -> Number -> Determiner = \str, num -> mkQuant str ** {
+    pr = "" ;
+    n = NoNum num ;
+  } ;
+
+  mkIdet : Str -> Str -> Number -> Bool -> Determiner = \str, standalone, num, isPre -> mkDet str num ** {
+    pr = case isPre of {True => str ; False => [] } ;
+    -- if isPre is True, then: "berapa kucing"
+    s = case isPre of { False => str ; True => [] };
+
+    sp = \\_ => standalone ;
+  } ;
+
+
+  --   s = \\p,a => vp.topic ++ np ++ vp.prePart ++ useVerb vp.verb ! p ! a ++ vp.compl ++ compl ;
+  -- np = vp.topic ++ np ;
+  -- vp = insertObj (ss compl) vp ;
 
 --------------------------------------------------------------------------------
 -- Prepositions
@@ -187,7 +230,14 @@ oper
 ------------------
 -- Adv
 
-  Adverb : Type = SS ;
+  Adverb : Type = {
+    s : Str;
+  } ;
+
+  IAdv : Type = Adverb ** {
+    isPre : Bool ;
+    vf : VForm ;
+  } ;
 
 ------------------
 -- VP
@@ -198,6 +248,7 @@ oper
 
   VPSlash : Type = VerbPhrase ** {
     c2 : Preposition ;
+    adjCompl : Str ;
     } ;
 
   useV : Verb -> VerbPhrase = \v -> v ** {
@@ -207,6 +258,7 @@ oper
   useComp : Str -> VerbPhrase = \s -> {
     s = \\vf,pol => nounneg pol ++ s ;
     } ;
+
 
   verbneg : Polarity -> Str = \pol -> case pol of {
     Neg => "tidak" ; -- or "tak"?
@@ -243,6 +295,39 @@ oper
 
   predVPSlash : NounPhrase -> VPSlash -> ClSlash = \np,vps ->
     predVP np <vps : VerbPhrase> ** {c2 = vps.c2} ;
+
+
+  -- mkClause : Str -> NounPhrase -> VPSlash -> Clause = \str,np,vp -> {
+  --   subj = str ++ np.s ! Bare;
+  --   pred = vp.s
+  -- } ;
+
+
+  -- mkClause : Str -> IPhrase -> VerbPhrase -> Clause = \str,ip,vp -> {
+  --   subj = ip.s ! Bare ;
+  --   pred = vp.s ;
+  -- } ;
+
+
+  -- baseQuant : Quant = {
+  --   s = [] ;
+  --   sp = \\_ => [] ;
+  --   poss = Bare ;
+  --   } ;
+
+  --     -- \\vf,pol, =>
+  --     -- let
+  --     --   verb   : Str    = joinVP vp tense ant pol agr ;
+  --     --   obj    : Str    = vp.s2 ! agr ;
+  --     -- in case ord of {
+  --     --   ODir   => subj ++ verb ++ obj ;  -- Ġanni jiekol ħut
+  --     --   OQuest => verb ++ obj ++ subj    -- jiekol ħut Ġanni ?
+  --     -- }
+
+  -- mkQuant : Str -> Quant = \str -> baseQuant ** {
+  --   s = str ;
+  --   sp = \\_ => str
+  --   } ;
 
 --------------------------------------------------------------------------------
 -- linrefs

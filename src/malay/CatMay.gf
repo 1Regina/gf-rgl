@@ -1,4 +1,4 @@
-concrete CatMay of Cat = CommonX ** open ResMay, Prelude in {
+concrete CatMay of Cat = CommonX - [IAdv] ** open ResMay, Prelude in {
 
   flags optimize=all_subs ;
 
@@ -23,10 +23,11 @@ concrete CatMay of Cat = CommonX ** open ResMay, Prelude in {
 -- Constructed in QuestionMay.
 
     QCl = ResMay.Clause ;
-    IComp = SS ;                -- interrogative complement of copula  e.g. "where"
+    IComp = {s: Str} ;                -- interrogative complement of copula  e.g. "where"
     IDet = ResMay.Determiner ;  -- interrogative determiner            e.g. "how many"
-    IQuant = ResMay.Quant ;     -- interrogative quantifier            e.g. "which"
-    IP = ResMay.NounPhrase ;    -- interrogative pronoun               e.g. "who"
+    IQuant = ResMay.IQuant ;     -- interrogative quantifier            e.g. "which"
+    IP = ResMay.IPhrase ;    -- interrogative pronoun               e.g. "who"
+    IAdv = ResMay.IAdv ;
 
 --2 Subord clauses and pronouns
 
@@ -107,7 +108,7 @@ concrete CatMay of Cat = CommonX ** open ResMay, Prelude in {
 
     V2A,   -- verb with NP and AP complement      e.g. "paint"
     V2V,   -- verb with NP and V complement       e.g. "cause"
-    V2S,   -- verb with NP and S complement       e.g. "tell"
+    V2S,   -- Reverb with NP and S complement       e.g. "tell"
     V2Q,   -- verb with NP and Q complement       e.g. "ask"
     V2 = ResMay.Verb2 ;
     V3 = ResMay.Verb3 ;
